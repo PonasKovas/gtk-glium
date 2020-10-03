@@ -67,12 +67,21 @@ fn main() {
             .unwrap()
         };
 
+        let counter = std::rc::Rc::new(std::cell::RefCell::new(0u32));
+
         glarea.connect_render(move |_glarea, _glcontext| {
             let mut frame =
                 glium::Frame::new(context.clone(), context.get_framebuffer_dimensions());
             // this is where you can do your glium rendering
-            frame.clear_color(0.6, 0.0, 1.0, 1.0);
+
+            let c = *counter.borrow() as f32 / 100.;
+            let r = c.sin() / 2. + 0.5;
+            let g = (c * 1.25).sin() / 2. + 0.5;
+            let b = (c * 1.5).sin() / 2. + 0.5;
+            frame.clear_color(r, g, b, 1.0);
+
             frame.finish().unwrap();
+            *counter.borrow_mut() += 1;
             Inhibit(true)
         });
 
