@@ -1,10 +1,9 @@
 use core::ffi::c_void;
-use gio::prelude::*;
+use gtk::glib;
 use glium::backend::Context;
 use glium::Surface;
 use glium::SwapBuffersError;
 use gtk::prelude::*;
-use std::env::args;
 
 struct GLAreaBackend {
     glarea: gtk::GLArea,
@@ -19,8 +18,8 @@ unsafe impl glium::backend::Backend for GLAreaBackend {
         gl_loader::get_proc_address(symbol) as *const _
     }
     fn get_framebuffer_dimensions(&self) -> (u32, u32) {
-        let allocation = self.glarea.get_allocation();
-        (allocation.width as u32, allocation.height as u32)
+        let allocation = self.glarea.allocation();
+        (allocation.width() as u32, allocation.height() as u32)
     }
     fn is_current(&self) -> bool {
         // GTK makes it current itself on each "render" signal
@@ -39,10 +38,12 @@ impl GLAreaBackend {
 
 fn main() {
     let application =
-        gtk::Application::new(None, Default::default()).expect("Initialization failed");
+        gtk::Application::builder()
+	.application_id("com.example.GtkGlium")
+	.build();
 
     application.connect_activate(|app| {
-        let window = gtk::ApplicationWindowBuilder::new()
+        let window = gtk::ApplicationWindow::builder()
             .application(app)
             .title("gtk-glium")
             .window_position(gtk::WindowPosition::Center)
@@ -82,17 +83,19 @@ fn main() {
 
             frame.finish().unwrap();
             *counter.borrow_mut() += 1;
-            Inhibit(true)
+            false.into()
         });
 
         // This makes the GLArea redraw 60 times per second
         // You can remove this if you want to redraw only when focused/resized
         const FPS: u32 = 60;
-        glib::source::timeout_add_local(1_000 / FPS, move || {
+        glib::source::timeout_add_local(
+	    std::time::Duration::from_secs_f64(1.0 / FPS as f64),
+	    move || {
             glarea.queue_draw();
-            glib::source::Continue(true)
+	    true.into()
         });
     });
 
-    application.run(&args().collect::<Vec<_>>());
+    application.run();
 }
