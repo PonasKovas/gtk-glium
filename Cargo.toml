@@ -2,11 +2,9 @@
 name = "gtk-glium"
 version = "0.1.0"
 authors = ["Ponas <mykolas.peteraitis@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-gtk = { version = "0.9.2", features=["v3_16"] }
-gio = "*"
-glib = "*"
-glium = { git = "https://github.com/glium/glium.git" }
+gtk = { version = "0.18" }
+glium = "0.32"
 gl_loader = "0.1.2"
